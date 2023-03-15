@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.Admin_SQL">
+
+	<resultMap type="ReviewVO" id="reviewlist">
+		<result column="ITEMNUM" property="itemnum" jdbcType="INTEGER"
+			javaType="Integer" />
+		<result column="REVIEWNUM" property="reviewnum"
+			jdbcType="INTEGER" javaType="Integer" />
+		<result column="REVIEWTITLE" property="reviewtitle"
+			jdbcType="VARCHAR" javaType="String" />
+		<result column="REVIEWCONTENT" property="reviewcontent"
+			jdbcType="VARCHAR" javaType="String" />
+	</resultMap>
+
+	<resultMap type="ItemAttrVO" id="attrlist">
+		<result column="ITEMCOST" property="itemcost"
+			jdbcType="INTEGER" javaType="Integer" />
+		<result column="ITEMSTOCK" property="itemstock"
+			jdbcType="INTEGER" javaType="Integer" />
+		<result column="ITEMCODE" property="itemcode"/>
+		<result column="ITEMNAME" property="itemname"
+			jdbcType="VARCHAR" javaType="String" />
+		<result column="ITEMOPTION" property="itemoption"
+			jdbcType="VARCHAR" javaType="String" />
+	</resultMap>
+
+	<resultMap type="ItemVO" id="itemlist">
+		<result column="ITEMNUM" property="itemnum" jdbcType="INTEGER"
+			javaType="Integer" />
+		<result column="ITEMNAME" property="itemname"
+			jdbcType="VARCHAR" javaType="String" />
+		<result column="ITEMIMG" property="itemimg"
+			jdbcType="VARCHAR" javaType="String" />
+	</resultMap>
+
+	<resultMap type="OrderVO" id="orderlist">
+		<result column="ORDERDATE" property="orderdate" />
+		<result column="ORDERNUM" property="ordernum" />
+		<result column="ID" property="id" />
+		<result column="MOBILE" property="mobile" />
+		<result column="ORDERCOST" property="ordercost" />
+		<result column="NAME" property="name" />
+		<result column="POSTCODE" property="postcode" />
+		<result column="ADDRESS" property="address" />
+		<result column="ADDRESSDETAIL" property="addressdetail" />
+		<result column="REVIEW" property="review" />
+		<result column="STATE" property="state" />
+		<collection property="itemattrvo" resultMap="attrlist" />
+		<collection property="itemvo" resultMap="itemlist" />
+	</resultMap>
+
+	<resultMap type="MemberVO" id="memberlist">
+		<result column="ID" property="id" />
+		<result column="NAME" property="name" />
+		<result column="ADMIN" property="admin" />
+		<result column="POINT" property="point" />
+		<result column="LEAVE" property="leave" />
+	</resultMap>
+
+	<!-- 회원관리 -->
+	<select id="member_list" resultMap="memberlist">
+		SELECT *
+		FROM MEMBER
+		WHERE admin=0
+	</select>
+
+	<!-- 회원 블랙처리시 leave 0->2로 변경 -->
+	<update id="member_black" parameterType="MemberVO">
+		UPDATE MEMBER
+		SET leave = 2
+		WHERE id = #{id}
+	</update>
+
+	<!-- 블랙->일반회원 / leave 2->0로 변경 -->
+	<update id="black_return" parameterType="MemberVO">
+		UPDATE MEMBER
+		SET leave = 0
+		WHERE id = #{id}
+	</update>
+
+	<!-- 주문관리 -->
+	<select id="order_admin" resultMap="orderlist">
+		SELECT *
+		FROM ORDERTABLE a, ItemAttr b, item c
+		where a.itemcode = b.itemcode and b.itemnum = c.itemnum
+		order by a.ordernum DESC
+
+	</select>
+
+	<!-- 주문상태 변경 -->
+	<update id="state_change" parameterType="OrderVO">
+		UPDATE ORDERTABLE
+		SET state = #{state}
+		WHERE ordernum = #{ordernum}
+	</update>
+
+	<!-- 리뷰관리 -->
+	<select id="review_admin" resultMap="reviewlist">
+		SELECT *
+		FROM REVIEW
+	</select>
+
+	<!-- 리뷰삭제 -->
+	<delete id="reviewdelete_admin">
+		DELETE
+		FROM REVIEW
+		WHERE reviewnum = #{reviewnum}
+	</delete>
+
+	<!-- 상품 등록 -->
+	<insert id="item_insert">
+		INSERT INTO item
+		values(#{itemnum} , #{itemname} ,
+		#{itemcat2} ,
+		#{itemimg} ,
+		#{itemdetailimg},
+		#{itemcat1})
+	</insert>
+
+	<!-- 상품수정 -->
+	<update id="item_update" parameterType="ItemVO">
+		update item set itemname
+		= #{itemname} , itemcat2 = #{itemcat2} , itemimg = #{itemimg} ,
+		itemdetailimg = #{itemdetailimg}
+		, itemcat1 = #{itemcat1}
+		where itemnum = #{itemnum}
+	</update>
+
+	<!-- 상품 상세 등록 -->
+	<insert id="itemattr_insert">
+		INSERT INTO ITEMATTR
+		VALUES(
+		#{ itemnum }, #{ itemcode}, #{ itemcost },
+		#{ itemstock }, #{ itemname }, #{ itemoption }
+		)
+	</insert>
+
+	<!-- 상품 상세 수정 -->
+	<update id="attr_update" parameterType="ItemAttrVO">
+		UPDATE ITEMATTR
+		SET
+		itemcost = #{itemcost} , itemstock = #{itemstock}
+		, itemoption =
+		#{itemoption}
+		WHERE itemcode = #{itemcode}
+	</update>
+
+	<!-- 상품 구분 -->
+	<select id="item_select" resultMap="itemlist">
+		SELECT *
+		FROM ITEM
+	</select>
+
+	<!-- 상품등록(대분류)값 들고오기 -->
+	<select id="item_info" resultType="ItemVO">
+		SELECT *
+		FROM item
+		WHERE itemnum
+		= #{itemnum}
+	</select>
+
+	<!-- 상품상세 수정시 값 들고오기 -->
+	<select id="attr_info" resultType="ItemAttrVO">
+		SELECT *
+		FROM ITEMATTR
+		WHERE
+		itemcode = #{itemcode}
+	</select>
+
+	<!-- 상품삭제(item) -->
+	<delete id="item_delete">
+		DELETE
+		FROM item
+		WHERE itemnum = #{itemnum}
+	</delete>
+
+	<!-- 상품옵션 한번에 삭제 -->
+	<delete id="attr_delete">
+		DELETE
+		FROM ITEMATTR
+		WHERE itemnum = #{itemnum}
+	</delete>
+
+	<!-- 상품옵션 개별 삭제 -->
+	<delete id="attrselect_delete">
+		DELETE
+		FROM ITEMATTR
+		WHERE itemcode = #{itemcode}
+	</delete>
+
+	<!-- 이미지등록 -->
+	<insert id="item_img" parameterType="ItemVO">
+		INSERT INTO ITEM
+		VALUES(#{itemnum},#{itemname},#{itemcat1},#{itemcat2},#{itemimg},#{itemdetailimg}
+		)
+	</insert>
+</mapper>

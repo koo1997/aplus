@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="mapper.Item_SQL">
+  
+  	<resultMap type="ReviewVO" id="reviewlist">
+		<result column="REVIEWNUM" property="reviewnum"
+			jdbcType="INTEGER" javaType="Integer" />
+		<result column="REVIEWTITLE" property="reviewtitle"
+			jdbcType="VARCHAR" javaType="String" />
+	</resultMap>
+	
+	<resultMap type="ItemVO" id="itemlist">
+		<result column="ITEMNUM" property="itemnum"
+			jdbcType="INTEGER" javaType="Integer" />
+		<result column="ITEMIMG" property="itemimg" />
+		<result column="ITEMCAT1" property="itemcat1"
+			jdbcType="INTEGER" javaType="Integer" />
+		<result column="ITEMCAT2" property="itemcat2"
+			jdbcType="INTEGER" javaType="Integer" />
+		<result column="ITEMNAME" property="itemname"
+			jdbcType="VARCHAR" javaType="String" />
+	</resultMap>
+	
+	<resultMap type="ItemAttrVO" id="itemAttr">
+		<result column="ITEMNUM" property="itemnum"
+			jdbcType="INTEGER" javaType="Integer" />
+		<result column="ITEMCODE" property="itemcode"
+			jdbcType="INTEGER" javaType="Integer" />
+		<result column="ITEMSTOCK" property="itemstock"
+			jdbcType="INTEGER" javaType="Integer" />	
+		<result column="ITEMCOST" property="itemcost"
+			jdbcType="INTEGER" javaType="Integer" />
+		<result column="ITEMOPTION" property="itemoption"
+			jdbcType="VARCHAR" javaType="String" />
+		<result column="ITEMNAME" property="itemname"
+			jdbcType="VARCHAR" javaType="String" />
+	</resultMap>
+	
+  	<!-- 대분류 -->
+	<select id="item_listL" resultMap="itemlist">
+		SELECT *
+		FROM ITEM
+		WHERE itemcat1 = #{itemcat1}
+	</select>
+	
+	<!-- 중분류 -->
+	<select id="item_list" resultMap="itemlist">
+		SELECT *
+		FROM ITEM
+		WHERE itemcat2 = #{itemcat2}
+	</select>
+
+	<!-- 디테일  -->
+	<select id="item_detail" resultType="ItemVO">
+		SELECT *
+		FROM ITEM
+		WHERE itemnum = #{itemnum}
+	</select>
+	
+	<!-- 옵션 박스 ajax -->
+	<select id="item_attr" resultMap="itemAttr">
+		SELECT *
+		FROM ITEMATTR
+		WHERE itemnum = #{itemnum}
+	</select>
+	
+	<!-- 가격  받아오는 ajax-->
+	<select id="item_op" resultType="ItemAttrVO">
+		SELECT *
+		FROM ITEMATTR
+		WHERE itemnum = #{itemnum}
+		AND itemoption = #{itemoption}
+	</select>
+	
+	<!-- 상품리뷰 목록 -->
+	<select id="itemreview_list" resultMap="reviewlist">
+		SELECT *
+		FROM REVIEW
+		WHERE itemnum = #{itemnum}
+	</select>
+	
+	<!-- 상품리뷰 상세 -->
+	<select id="itemreview_detail" resultType="ReviewVO">
+		SELECT *
+		FROM REVIEW
+		WHERE itemnum = #{itemnum}
+	</select>
+	
+	<!-- 구현중.. -->
+	<!-- 상품검색  -->
+<!-- 	<select id="item_search">
+		SELECT *
+		FROM ITEM
+		WHERE itemname like '%service%'
+		order by itemnum desc
+	</select> -->
+</mapper>
